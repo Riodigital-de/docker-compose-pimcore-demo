@@ -1,0 +1,55 @@
+version: '2'
+
+services:
+  php:
+    build:
+      context: ./php
+      dockerfile: ${pimcore_dockerfile}
+      args:
+        - USE_MEMCACHE=${pimcore_use_memcache}
+        - USE_REDIS=${pimcore_use_redis}
+        - USE_RECOMMENDED=${pimcore_use_recommended}
+        - USE_ADDITIONAL=${pimcore_use_additional}
+        - LOG_ERROR=${pimcore_log_error_to_docker}
+        - LOG_ACCESS=${pimcore_log_access_to_docker}
+        - MEMORY_LIMIT=${pimcore_memory_limit}
+        - POST_MAXSIZE=${pimcore_post_maxsize}
+        - UPLOAD_MAX_FILESIZE=${pimcore_upload_max_filesize}
+        - DATE_TIMEZONE=${pimcore_date_timezone}
+    volumes:
+    - ./data/pimcore:/var/www/
+    depends_on:
+      - db
+      - redis
+    environment:
+      - SAMPLE_DATA=${pimcore_sample_data}
+      - MYSQL_DATABASE=${mysql_database}
+      - MYSQL_USER=${mysql_user}
+      - MYSQL_PASSWORD=${mysql_password}
+
+  db:
+    image: mariadb:10
+    environment:
+      - MYSQL_ROOT_PASSWORD=${mysql_root_password}
+      - MYSQL_DATABASE=${mysql_database}
+      - MYSQL_USER=${mysql_user}
+      - MYSQL_PASSWORD=${mysql_password}
+    command: [mysqld, --character-set-server=utf8, --collation-server=utf8_general_ci]
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: [redis-server, /usr/local/etc/redis/redis.conf]
+
+  nginx:
+    build:
+      context: ./nginx
+    environment:
+      - SERVER_NAMES=${server_names}
+    ports:
+      - 80:80
+    volumes_from:
+      - php
+    depends_on:
+      - php

@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  php:
+    ports:
+      - 9000:9000
+
+  db:
+    ports:
+      - 3306:3306
+
+  adminer:
+    image: clue/adminer
+    ports:
+      - 1080:80
