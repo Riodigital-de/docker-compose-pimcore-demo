@@ -104,4 +104,5 @@ $RECYCLE.BIN/
 .idea/
 
 docker-compose.override.yml
-.env
+#.env
+#config/backup/gpgPassPhrase

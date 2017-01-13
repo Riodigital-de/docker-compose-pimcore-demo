@@ -1,0 +1,36 @@
+#!/bin/sh
+
+DAY=$(date '+%Y-%m-%d')
+echo "$(date +%Y-%m-%d:%H:%M:%S) : Starting postgres backup"
+mkdir /backup/${DAY}
+touch ~/.pgpass
+echo 'db:5432:*:root:$DB_ROOT_PW' > ~/.pgpass
+chmod 600 ~/.pgpass
+pg_dumpall -h db -U root -w > /tmp/postgres-${DAY}.sql
+
+if [ $ENCRYPT = "true" ]; then
+    cat /gpgPassPhrase | gpg --cipher-algo AES256 -q --batch --no-tty --passphrase-fd 0 -c /tmp/postgres-${DAY}.sql
+    if [ $? != 0 ]; then
+      echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR encrypting postgres backup"
+      #send mail
+      exit
+    fi
+    rm /tmp/postgres-${DAY}.sql
+    mv -v /tmp/postgres-${DAY}.sql.gpg /backup/${DAY}/
+else
+    gzip //tmp/postgres-${DAY}.sql
+    mv -v /tmp/postgres-${DAY}.sql.gz /backup/${DAY}/
+    if [ $? != 0 ]; then
+      echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR compressing postgres backup"
+      #send mail
+      exit
+    fi
+fi
+
+if [ $? != 0 ]; then
+  echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR while dumping postgres"
+  #send mail
+  exit
+else
+  echo "$(date +%Y-%m-%d:%H:%M:%S) : Successfully dumped postgres"
+fi

@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  php:
+  pimcore-app:
     ports:
       - 9000:9000
 
