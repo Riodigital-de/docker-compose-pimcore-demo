@@ -16,14 +16,14 @@ It is meant as a proposal to the pimcore company to replace the existing docker 
 
 ### I just want to give pimcore a spin, take me to the fast lane! ###
 
-* git clone https://github.com/Riodigital-de/docker-pimcore-demo-standalone.git _/path/to/where/youWantToHave/theFilesSit_
-* cd _/path/to/where/youWantToHave/theFilesSit_ 
+* git clone https://github.com/Riodigital-de/docker-pimcore-demo-standalone.git _/whereTheFilesForYourPicmoreStackShouldBe_
+* cd _/whereTheFilesForYourPicmoreStackShouldBe_ 
 * docker-compose up
 
-It's that simple. If you just want to test pimcore with the sample data installed, that's all you need to do.
+That's it.
 
 The build of the php container and download of the pimcore files on the first run can take some time however.
-Watch the output of docker-compose, once the php container reports _ready to handle connections_ , you are good to go :)
+Watch the output of docker-compose, once the php container reports _ready to handle connections_, you are good to go :)
 
 Either go to
 
@@ -53,6 +53,7 @@ By default, .env is configure as such:
 * php will log php errors to the docker logs, but not php access
 * php will install all recommended and additional software to run pimcore
 * the nginx proxy server will listen to pimcore-demo.de, pimcore-demo.at and pimcore-demo.com
+* backups are created daily (at 02:00 am) and are AES-256 encrypted using the passphrase defined in _/config/backup/gpgPassPhrase_
 
 At the moment, all options in php except _pimcore_sample_data_ must trigger a rebuild of the php image to take effect, all other options take effect every time you run docker-compose up.
 

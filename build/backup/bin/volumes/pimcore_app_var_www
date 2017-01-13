@@ -1,0 +1,45 @@
+#!/bin/sh
+
+SERVICE=pimcore-app
+VOLUME_NAME=var-www
+VOLUME_PATH=/var/www
+
+DAY=$(date '+%Y-%m-%d')
+mkdir /backup/${DAY}
+echo "$(date +%Y-%m-%d:%H:%M:%S) : Starting backup of volume ${VOLUME_NAME} of service ${SERVICE}"
+
+tar cf /tmp/${SERVICE}-${VOLUME_NAME}-${DAY}.tar ${VOLUME_PATH}
+if [ $? != 0 ]; then
+  echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR taring ${VOLUME_NAME} of service ${SERVICE}"
+  #send mail
+  exit
+fi
+
+if [ $ENCRYPT = "true" ]; then
+    cat /gpgPassPhrase | gpg --cipher-algo AES256 -q --batch --no-tty --passphrase-fd 0 -c /tmp/${SERVICE}-${VOLUME_NAME}-${DAY}.tar
+    if [ $? != 0 ]; then
+      echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR encrypting volume ${VOLUME_NAME} of service ${SERVICE}"
+      #send mail
+      exit
+    fi
+    rm /tmp/${SERVICE}-${VOLUME_NAME}-${DAY}.tar
+    mv -v /tmp/${SERVICE}-${VOLUME_NAME}-${DAY}.tar.gpg /backup/${DAY}/
+else
+    gzip /tmp/${SERVICE}-${VOLUME_NAME}-${DAY}.tar
+    mv -v /tmp/${SERVICE}-${VOLUME_NAME}-${DAY}.tar.gz /backup/${DAY}/
+    if [ $? != 0 ]; then
+      echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR compressing volume ${VOLUME_NAME} of service ${SERVICE}"
+      #send mail
+      exit
+    fi
+fi
+
+
+
+if [ $? != 0 ]; then
+  echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR in backup of volume ${VOLUME_NAME} of service ${SERVICE}"
+  #send mail
+  exit
+else
+  echo "$(date +%Y-%m-%d:%H:%M:%S) : Successfully backed up ${VOLUME_NAME} of service ${SERVICE}"
+fi

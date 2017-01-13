@@ -1,9 +1,10 @@
 version: '2'
 
 services:
-  php:
+
+  pimcore-app:
     build:
-      context: ./php
+      context: ./build/php
       dockerfile: ${pimcore_dockerfile}
       args:
         - USE_MEMCACHE=${pimcore_use_memcache}
@@ -28,7 +29,7 @@ services:
       - MYSQL_PASSWORD=${mysql_password}
 
   db:
-    image: mariadb:10
+    image: mariadb:10.1.20
     environment:
       - MYSQL_ROOT_PASSWORD=${mysql_root_password}
       - MYSQL_DATABASE=${mysql_database}
@@ -39,17 +40,35 @@ services:
   redis:
     image: redis:alpine
     volumes:
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: [redis-server, /usr/local/etc/redis/redis.conf]
 
-  nginx:
+  proxy:
     build:
-      context: ./nginx
+      context: ./build/proxy
     environment:
       - SERVER_NAMES=${server_names}
     ports:
       - 80:80
+    volumes:
+      - ./config/proxy/nginx.conf:/etc/nginx/nginx.conf
     volumes_from:
-      - php
+      - pimcore-app
     depends_on:
-      - php
+      - pimcore-app
+
+  backup:
+    build:
+      context: ./build/backup
+      args:
+        - DB_TYPE=${backup_db_type}
+        - ENCRYPT=${backup_encrypt}
+        - BACKUP_CYCLE=${backup_cycle}
+    environment:
+      - DB_ROOT_PW=${mysql_root_password}
+      - ENCRYPT=${backup_encrypt}
+    volumes:
+      - ./config/backup/gpgPassPhrase:/gpgPassPhrase:ro
+      - ${backup_local_location}:/backup
+    volumes_from:
+      - pimcore-app

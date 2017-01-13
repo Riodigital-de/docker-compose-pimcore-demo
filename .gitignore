@@ -105,3 +105,4 @@ $RECYCLE.BIN/
 
 docker-compose.override.yml
 .env
+config/backup/gpgPassPhrase

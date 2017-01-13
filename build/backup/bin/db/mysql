@@ -1,0 +1,37 @@
+#!/bin/sh
+
+DAY=$(date '+%Y-%m-%d')
+echo "$(date +%Y-%m-%d:%H:%M:%S) : Starting mysql backup"
+mkdir /backup/${DAY}
+
+
+
+mysqldump -h db -u root --password=${DB_ROOT_PW} --all-databases > /tmp/mysql-${DAY}.sql
+
+if [ $ENCRYPT = "true" ]; then
+    echo "$(date +%Y-%m-%d:%H:%M:%S) : Encrypting mysql backup"
+    cat /gpgPassPhrase | gpg --cipher-algo AES256 -q --batch --no-tty --passphrase-fd 0 -c /tmp/mysql-${DAY}.sql
+    if [ $? != 0 ]; then
+      echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR encrypting mysql backup"
+      #send mail
+      exit
+    fi
+    rm /tmp/mysql-${DAY}.sql
+    mv -v /tmp/mysql-${DAY}.sql.gpg /backup/${DAY}/mysql-${DAY}.sql.gpg
+else
+    gzip /tmp/mysql-${DAY}.sql
+    mv -v /tmp/mysql-${DAY}.sql.gz /backup/${DAY}/mysql-${DAY}.sql.gz
+    if [ $? != 0 ]; then
+      echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR compressing mysql backup"
+      #send mail
+      exit
+    fi
+fi
+
+if [ $? != 0 ]; then
+  echo "$(date +%Y-%m-%d:%H:%M:%S) : ERROR while dumping mysql"
+  #send mail
+  exit
+else
+  echo "$(date +%Y-%m-%d:%H:%M:%S) : Successfully dumped mysql"
+fi
