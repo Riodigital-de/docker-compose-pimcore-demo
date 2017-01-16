@@ -4,7 +4,7 @@ DAY=$(date '+%Y-%m-%d')
 echo "$(date +%Y-%m-%d:%H:%M:%S) : Starting postgres backup"
 mkdir /backup/${DAY}
 touch ~/.pgpass
-echo 'db:5432:*:root:$DB_ROOT_PW' > ~/.pgpass
+echo "db:5432:*:root:${DB_ROOT_PW}" > ~/.pgpass
 chmod 600 ~/.pgpass
 pg_dumpall -h db -U root -w > /tmp/postgres-${DAY}.sql
 

@@ -14,16 +14,20 @@ RUN if [ "$ENCRYPT" = "true" ] || [ -n "$DB_TYPE" ]; then apk update; fi
 
 RUN if [ "$ENCRYPT" = "true" ]; then apk add gnupg && mkdir /root/.gnupg ; fi
 
+
 RUN if [ "$DB_TYPE" = "postgres" ]; then \
-        apk add postgresql-client && \
+        # postgresql-client is insufficient, that package only contains the bare client withput any tools whatsoever
+        apk add postgresql && \
         mv /tmp/bin/db/postgres /etc/periodic/${BACKUP_CYCLE}/postgres; \
     elif [ "$DB_TYPE" = "mysql" ]; then \
+        # the mariadb-client package does include tools
+        # thank you alpine package maintainers for your impeccable attention to consistency
         apk add mariadb-client && \
         mv /tmp/bin/db/mysql /etc/periodic/${BACKUP_CYCLE}/mysql; \
     fi
 
 RUN mv /tmp/bin/volumes/* /etc/periodic/${BACKUP_CYCLE}/
 
-RUN chmod -R +x /etc/periodic/${BACKUP_CYCLE}/
+RUN chmod -R +x /etc/periodic/${BACKUP_CYCLE}
 
 CMD ["crond", "-l", "2", "-f"]
