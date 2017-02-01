@@ -13,3 +13,9 @@ services:
     image: clue/adminer
     ports:
       - 1080:80
+
+  redisCommander:
+    image: tenstartups/redis-commander
+    command: --redis-host redis
+    ports:
+      - "8081:8081"
