@@ -33,6 +33,7 @@ RUN LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php \
         php7.0-mbstring \
         php7.0-zip \
         php7.0-bz2 \
+        php7.0-curl \
     && \
     # install composer
     /tmp/install-composer-debian.sh && mv /composer.phar /usr/local/bin/composer \

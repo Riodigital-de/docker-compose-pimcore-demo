@@ -41,6 +41,8 @@ RUN apt-get install -y --no-install-recommends php7.0-zip
 
 RUN apt-get install -y --no-install-recommends php7.0-bz2
 
+RUN apt-get install -y --no-install-recommends php7.0-curl
+
 # openssl included in php7
 
 # opcache installed with php7.0-fpm
@@ -54,8 +56,6 @@ RUN mv /composer.phar /usr/local/bin/composer
 ## RECOMMENDED
 # from ondrej ppa, defaults to php-imagick, provides wrapper for php5.x - php7.1
 RUN if ( $USE_RECOMMENDED ); then  apt-get install -y --no-install-recommends php7.0-imagick; fi
-
-RUN if ( $USE_RECOMMENDED ); then  apt-get install -y --no-install-recommends php7.0-curl; fi
 
 # same deal as with imagick
 RUN if ( $USE_REDIS ); then  apt-get install -y --no-install-recommends php7.0-redis; fi
