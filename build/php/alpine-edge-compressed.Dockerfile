@@ -9,6 +9,10 @@ ARG LOG_ACCESS
 ARG MEMORY_LIMIT
 ARG POST_MAXSIZE
 ARG UPLOAD_MAX_FILESIZE
+ARG PM_MAX_CHILDREN
+ARG PM_START_SERVERS
+ARG PM_MIN_SPARE_SERVERS
+ARG PM_MAX_SPARE_SERVERS
 ARG DATE_TIMEZONE
 
 COPY ./alpine /tmp
@@ -37,7 +41,6 @@ RUN apk update \
     php7-dom \
     php7-fpm \
     php7-json \
-    php7-curl \
     php7-dev \
     php7-gd \
     php7-imap \
@@ -59,12 +62,13 @@ RUN apk update \
     php7-zlib \
     # composer dependency
     php7-phar \
+    php7-curl \
     && \
     ln -s /usr/bin/php7 /usr/bin/php \
     && \
     /tmp/install-composer-alpine-edge.sh && mv composer.phar /usr/bin/composer \
     && \
-    if ( $USE_RECOMMENDED || $USE_ADDITIONAL ); then sh /tmp/install-build-dependencies.sh; fi \
+    sh /tmp/install-build-dependencies.sh \
     && \
     if ( $USE_RECOMMENDED ); then sh /tmp/install-imagemack-php7-extension.sh; fi \
     && \
@@ -107,10 +111,14 @@ RUN apk update \
     if ( $LOG_ACCESS ); then  sed -i "/;access.log =/c\access.log = \/proc\/self\/fd\/2" /etc/php7/php-fpm.d/www.conf; fi && \
     sed -i "/memory_limit =/c\memory_limit = $MEMORY_LIMIT" /etc/php7/php.ini && \
     sed -i "/post_max_size =/c\post_max_size = $POST_MAXSIZE" /etc/php7/php.ini && \
+    sed -i "/pm.max_children =/c\pm.max_children = $PM_MAX_CHILDREN" /etc/php7/php-fpm.d/www.conf && \
+    sed -i "/pm.start_servers =/c\pm.start_servers = $PM_START_SERVERS" /etc/php7/php-fpm.d/www.conf && \
+    sed -i "/pm.min_spare_servers =/c\pm.min_spare_servers = $PM_MIN_SPARE_SERVERS" /etc/php7/php-fpm.d/www.conf && \
+    sed -i "/pm.max_spare_servers =/c\pm.max_spare_servers = $PM_MAX_SPARE_SERVERS" /etc/php7/php-fpm.d/www.conf && \
     sed -i "/upload_max_filesize =/c\upload_max_filesize = $UPLOAD_MAX_FILESIZE" /etc/php7/php.ini && \
     sed -i "/;date.timezone =/c\date.timezone = $DATE_TIMEZONE" /etc/php7/php.ini \
     && \
-    if ( $USE_RECOMMENDED || $USE_ADDITIONAL ); then apk del build-dependencies; fi && \
+    apk del build-dependencies && \
     rm /var/cache/apk/* \
     && \
     mkdir /var/www \

@@ -10,6 +10,10 @@ ARG LOG_ACCESS
 ARG MEMORY_LIMIT
 ARG POST_MAXSIZE
 ARG UPLOAD_MAX_FILESIZE
+ARG PM_MAX_CHILDREN
+ARG PM_START_SERVERS
+ARG PM_MIN_SPARE_SERVERS
+ARG PM_MAX_SPARE_SERVERS
 ARG DATE_TIMEZONE
 
 RUN apk update
@@ -21,7 +25,7 @@ RUN apk add \
     sntpc \
     # php
     php7 \
-    php7-cytpe \
+    php7-ctype \
     php7-session \
     php7-dom \
     php7-fpm \
@@ -47,7 +51,8 @@ RUN apk add \
     php7-bcmath \
     php7-zlib \
     # composer dependency
-    php7-phar
+    php7-phar \
+    php7-curl
 
 # symlink php7 to php so that more tools, like composer, can use it correctly
 RUN ln -s /usr/bin/php7 /usr/bin/php
@@ -60,18 +65,15 @@ RUN chmod +x /usr/bin/composer
 
 COPY ./alpine/install-build-dependencies.sh /tmp/install-build-dependencies.sh
 RUN chmod +x /tmp/install-build-dependencies.sh
-RUN if ( $USE_RECOMMENDED || $USE_ADDITIONAL ); then sh /tmp/install-build-dependencies.sh; fi
+RUN sh /tmp/install-build-dependencies.sh
 
 ## RECOMMENDED
 COPY ./alpine/install-imagemack-php7-extension.sh /tmp/install-imagemack-php7-extension.sh
 RUN chmod +x /tmp/install-imagemack-php7-extension.sh
 RUN if ( $USE_RECOMMENDED ); then sh /tmp/install-imagemack-php7-extension.sh; fi
 
-RUN if ( $USE_RECOMMENDED ); then apk add \
-    php7-curl; fi
-
 ## CACHING
-COPY ./alpine/install-redis3-php7-extension.sh /tmp/rinstall-redis3-php7-extension.sh
+COPY ./alpine/install-redis3-php7-extension.sh /tmp/install-redis3-php7-extension.sh
 RUN chmod +x /tmp/install-redis3-php7-extension.sh
 RUN if ( $USE_REDIS ); then  sh /tmp/install-redis3-php7-extension.sh; fi
 
@@ -134,6 +136,12 @@ RUN if ( $LOG_ACCESS ); then  sed -i "/;access.log =/c\access.log = \/proc\/self
 RUN sed -i "/memory_limit =/c\memory_limit = $MEMORY_LIMIT" /etc/php7/php.ini
 RUN sed -i "/post_max_size =/c\post_max_size = $POST_MAXSIZE" /etc/php7/php.ini
 RUN sed -i "/upload_max_filesize =/c\upload_max_filesize = $UPLOAD_MAX_FILESIZE" /etc/php7/php.ini
+
+# php-fpm www.conf process management
+RUN sed -i "/pm.max_children =/c\pm.max_children = $PM_MAX_CHILDREN" /etc/php7/php-fpm.d/www.conf
+RUN sed -i "/pm.start_servers =/c\pm.start_servers = $PM_START_SERVERS" /etc/php7/php-fpm.d/www.conf
+RUN sed -i "/pm.min_spare_servers =/c\pm.min_spare_servers = $PM_MIN_SPARE_SERVERS" /etc/php7/php-fpm.d/www.conf
+RUN sed -i "/pm.max_spare_servers =/c\pm.max_spare_servers = $PM_MAX_SPARE_SERVERS" /etc/php7/php-fpm.d/www.conf
 
 # date timezone
 RUN sed -i "/;date.timezone =/c\date.timezone = $DATE_TIMEZONE" /etc/php7/php.ini

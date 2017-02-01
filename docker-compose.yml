@@ -16,6 +16,10 @@ services:
         - MEMORY_LIMIT=${pimcore_memory_limit}
         - POST_MAXSIZE=${pimcore_post_maxsize}
         - UPLOAD_MAX_FILESIZE=${pimcore_upload_max_filesize}
+        - PM_MAX_CHILDREN=${pimcore_pm_max_children}
+        - PM_START_SERVERS=${pimcore_pm_start_servers}
+        - PM_MIN_SPARE_SERVERS=${pimcore_pm_min_spare_servers}
+        - PM_MAX_SPARE_SERVERS=${pimcore_pm_max_spare_servers}
         - DATE_TIMEZONE=${pimcore_date_timezone}
     volumes:
     - ./data/pimcore:/var/www/

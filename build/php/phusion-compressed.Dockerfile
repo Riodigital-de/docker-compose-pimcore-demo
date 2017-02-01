@@ -9,6 +9,10 @@ ARG LOG_ACCESS
 ARG MEMORY_LIMIT
 ARG POST_MAXSIZE
 ARG UPLOAD_MAX_FILESIZE
+ARG PM_MAX_CHILDREN
+ARG PM_START_SERVERS
+ARG PM_MIN_SPARE_SERVERS
+ARG PM_MAX_SPARE_SERVERS
 ARG DATE_TIMEZONE
 
 COPY ./phusion /tmp
@@ -96,6 +100,11 @@ RUN LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php \
     sed -i "/post_max_size =/c\post_max_size = $POST_MAXSIZE" /etc/php/7.0/cli/php.ini && \
     sed -i "/upload_max_filesize =/c\upload_max_filesize = $UPLOAD_MAX_FILESIZE" /etc/php/7.0/fpm/php.ini && \
     sed -i "/upload_max_filesize =/c\upload_max_filesize = $UPLOAD_MAX_FILESIZE" /etc/php/7.0/cli/php.ini && \
+    # php-fpm www.conf process management
+    sed -i "/pm.max_children =/c\pm.max_children = $PM_MAX_CHILDREN" /etc/php/7.0/fpm/pool.d/www.conf && \
+    sed -i "/pm.start_servers =/c\pm.start_servers = $PM_START_SERVERS" /etc/php/7.0/fpm/pool.d/www.conf && \
+    sed -i "/pm.min_spare_servers =/c\pm.min_spare_servers = $PM_MIN_SPARE_SERVERS" /etc/php/7.0/fpm/pool.d/www.conf && \
+    sed -i "/pm.max_spare_servers =/c\pm.max_spare_servers = $PM_MAX_SPARE_SERVERS" /etc/php/7.0/fpm/pool.d/www.conf && \
     # date timezone
     sed -i "/;date.timezone =/c\date.timezone = $DATE_TIMEZONE" /etc/php/7.0/fpm/php.ini && \
     sed -i "/;date.timezone =/c\date.timezone = $DATE_TIMEZONE" /etc/php/7.0/cli/php.ini \
