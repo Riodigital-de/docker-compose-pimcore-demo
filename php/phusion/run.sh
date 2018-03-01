@@ -12,7 +12,7 @@ if [ ! -d /var/www/pimcore ]; then
         sleep 10
     elif [ "$SAMPLE_DATA" = false ]; then
         echo "Downloading Pimcore professional (without sample data)"
-        wget --progress=dot:mega https://www.pimcore.org/download/pimcore-latest.zip -O pimcore-install.zip
+        wget --progress=dot:mega https://pimcore.com/download-5/pimcore-latest.zip -O pimcore-install.zip
         echo "extracting pimcore archive, this will take some time"
     else
         echo "Unknown value in .env of variable PIMCORE_SAMPLE_DATA : " + $SAMPLE_DATA
